@@ -8,13 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
 
 public class App {
   public static void main(String[] args) throws IOException {
-    // Initialising the writers
-    FileWriter fw = new FileWriter("information.txt");
-    BufferedWriter bw = new BufferedWriter(fw);
-    PrintWriter pw = new PrintWriter(bw);
+    Scanner sc = new Scanner(System.in);
   }
 
   /**
@@ -46,6 +44,9 @@ public class App {
       PrintWriter pw = new PrintWriter(bw);
 
       pw.println(text);
+      pw.close();
+      bw.close();
+      fw.close();
     } catch (IOException e) {
       e.printStackTrace();
     }
