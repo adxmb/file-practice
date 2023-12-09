@@ -1,5 +1,4 @@
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,7 +32,10 @@ public class App {
           app.remove();
           break;
         case "find":
-          app.find();
+          app.find(sc);
+          break;
+        case "edit":
+          app.edit();
           break;
         default:
           System.out.println("\nInvalid command. Type 'help' for a list of commands.\n");
@@ -101,7 +103,7 @@ public class App {
       return "exit"; 
     }
     // If the person is already in the file, then cannot alter their data
-    if (!data.equals("") || !contains(data)) {
+    if (!data.equals("") && !contains(data.split(" ")[0], data.split(" ")[1]).equals("")) {
       fileWrite("data.txt", data);
       System.out.println("Person added to file.\n");
     } else {
@@ -111,6 +113,13 @@ public class App {
     return "";
   }
 
+  /**
+   * Method to ask the user for the data to add to the file.
+   * Asks for all the key points from the user, and then checks if the date of birth is valid.
+   * 
+   * @param sc The scanner to read the user's input.
+   * @return The data to add to the file.
+   */
   private String askForData(Scanner sc) {
     String data = "";
     System.out.println("  Given Name: ");
@@ -156,38 +165,29 @@ public class App {
   private String isValidDate(String dob) throws NumberFormatException {
     String[] parts = dob.split("/");
     if (parts.length == 3) {
-      int[] date = new int[]{
-          Integer.parseInt(parts[0]), 
-          Integer.parseInt(parts[1]), 
-          Integer.parseInt(parts[2])};
-      // Making sure that the day, month and year are valid
-      if (date[0] > 0 && date[0] < 32 && date[1] > 0 && date[1] < 13 && date[2] > 0) {
-        // Making sure that the day and month are 2 digits long
-        if (date[0] < 10) {
-          parts[0] = "0" + parts[0];
+      // Check if the inputted date is a valid date
+      int day = Integer.parseInt(parts[0]);
+      int month = Integer.parseInt(parts[1]);
+      int year = Integer.parseInt(parts[2]);
+      if (day > 0 && day < 32 && month > 0 && month < 13 && year > 0) {
+        // Put the date into the DD/MM/YYYY format
+        String date = "";
+        if (day < 10) {
+          date += "0" + day + "/";
+        } else {
+          date += day + "/";
         }
-        // Making sure that no invalid days for certain months are entered
-        if (date[1] < 10) {
-          if (date[1] == 2) {
-            if (date[0] > 29) {
-              return "";
-            }
-          } else if (date[1] == 4 || date[1] == 6 || date[1] == 9 || date[1] == 11) {
-            if (date[0] > 30) {
-              return "";
-            }
+        if (month < 10) {
+          // If the month does not have the right amount of days in it, then the date is invalid
+          if (!checkMonthDay(month, day)) {
+            return "";
           }
-          parts[1] = "0" + parts[1];
+          date += "0" + month + "/";
+        } else {
+          date += month + "/";
         }
-        // Making sure that the year is 4 digits long
-        if (date[2] < 10) {
-          parts[2] = "000" + parts[2];
-        } else if (date[2] < 100) {
-          parts[2] = "00" + parts[2];
-        } else if (date[2] < 1000) {
-          parts[2] = "0" + parts[2];
-        }
-        return parts[0] + "/" + parts[1] + "/" + parts[2];
+        date += year;
+        return date;
       }
     }
     return "";
@@ -204,16 +204,85 @@ public class App {
       + name.substring(1).toLowerCase();
   }
 
+  // TODO: Implement remove a datapoint
   public void remove() {
   }
 
-  public void find() {
+  /**
+   * Method to find a person in the file. Uses the person's given name and surname to find them.
+   * 
+   * @param sc The scanner to read the user's input.
+   * @return An empty string.
+   */
+  public String find(Scanner sc) {
+    System.out.println("  Given Name: ");
+    String givenName = sc.nextLine().trim();
+    if (givenName.toLowerCase().equals("exit")) {
+      return "exit";
+    }
+    givenName = makeGoodGrammar(givenName);
+
+    System.out.println("  Surname: ");
+    String surname = sc.nextLine().trim();
+    if (surname.toLowerCase().equals("exit")) {
+      return "exit";
+    }
+    surname = makeGoodGrammar(surname);
+    // If the person is in the file, then print their data
+    String line = contains(givenName, surname);
+    if (!line.equals("")) {
+      System.out.println("  Person found!");
+      System.out.println("  " + line + "\n");
+    } else {
+      System.out.println("  Person not found\n");
+    }
+    return "";
   }
 
+  // TODO: Implement edit a datapoint
   public void edit() {
   }
 
-  private boolean contains(String data) {
-    return false;
+  /**
+   * Method to check if the file contains a person with the given name and surname.
+   * 
+   * @param givenName The given name of the person to check.
+   * @param surname The surname of the person to check.
+   * @return True if the person is in the file, otherwise false.
+   */
+  private String contains(String givenName, String surname) {
+    List<String> lines = Collections.emptyList();
+    try {
+      lines = Files.readAllLines(Paths.get("data.txt"), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    for (String line : lines) {
+      String[] lineParts = line.split(" ");
+      if (lineParts[0].equals(givenName) && lineParts[1].equals(surname)) {
+        return line;
+      }
+    }
+    return "";
+  }
+
+  /**
+   * Method to check if the day and month are valid for the given month.
+   * 
+   * @param month The month to check.
+   * @param day The day to check.
+   * @return True if the day and month are valid, otherwise false.
+   */
+  private boolean checkMonthDay(int month, int day) {
+    if (month == 2) {
+      if (day > 29) {
+        return false;
+      }
+    } else if (month == 4 || month == 6 || month == 9 || month == 11) {
+      if (day > 30) {
+        return false;
+      }
+    }
+    return true;
   }
 }
