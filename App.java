@@ -1,4 +1,7 @@
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -29,7 +32,7 @@ public class App {
           }
           break;
         case "remove":
-          app.remove();
+          app.remove(sc);
           break;
         case "find":
           app.find(sc);
@@ -103,11 +106,11 @@ public class App {
       return "exit"; 
     }
     // If the person is already in the file, then cannot alter their data
-    if (!data.equals("") && !contains(data.split(" ")[0], data.split(" ")[1]).equals("")) {
+    if (!data.equals("") && contains(data.split(" ")[0], data.split(" ")[1]).equals("")) {
       fileWrite("data.txt", data);
       System.out.println("Person added to file.\n");
     } else {
-      System.out.println("  Person already exists in the file. Use 'edit' to change their data.");
+      System.out.println("  Person already exists in the file. Use 'edit' to change their data.\n");
     }
 
     return "";
@@ -205,7 +208,50 @@ public class App {
   }
 
   // TODO: Implement remove a datapoint
-  public void remove() {
+  public void remove(Scanner sc) throws IOException {
+    System.out.println("  Given Name: ");
+    String givenName = sc.nextLine().trim();
+    if (givenName.toLowerCase().equals("exit")) {
+      return;
+    }
+    givenName = makeGoodGrammar(givenName);
+
+    System.out.println("  Surname: ");
+    String surname = sc.nextLine().trim();
+    if (surname.toLowerCase().equals("exit")) {
+      return;
+    }
+    surname = makeGoodGrammar(surname);
+
+    // If the person is in the file, then remove them
+    String line = contains(givenName, surname);
+    if (!line.equals("")) {
+      System.out.println("  Person found!");
+      // Logic to remove the person from the file
+      File inputFile = new File("data.txt");
+      File tempFile = new File("temp.txt");
+
+      BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+      BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+
+      String currentLine;
+
+      while((currentLine = reader.readLine()) != null) {
+        String trimmedLine = currentLine.trim();
+        if(trimmedLine.equals(line)) continue;
+        writer.write(currentLine + System.getProperty("line.separator"));
+      }
+      writer.close();
+      reader.close();
+      boolean successful = tempFile.renameTo(inputFile);
+      if (successful) {
+        System.out.println("  Person removed from file.\n");
+      } else {
+        System.out.println("  Person not removed from file.\n");
+      }
+    } else {
+      System.out.println("  Person not found\n");
+    }
   }
 
   /**
