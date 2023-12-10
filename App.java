@@ -38,7 +38,7 @@ public class App {
           app.find(sc);
           break;
         case "edit":
-          app.edit();
+          app.edit(sc);
           break;
         default:
           System.out.println("\nInvalid command. Type 'help' for a list of commands.\n");
@@ -46,6 +46,7 @@ public class App {
       }
       next = sc.nextLine().toLowerCase().trim();
     }
+    sc.close();
   }
 
   /**
@@ -93,7 +94,8 @@ public class App {
     System.out.println("  help - Prints this list of commands.");
     System.out.println("  add - Adds new data into the file.");
     System.out.println("  remove - Removes specific data into the file.");
-    System.out.println("  find - prints the information of a data point if the data point is found.");
+    System.out.println("  find - prints the information of a datapoint if the data point is found.");
+    System.out.println("  edit - Edits a datapoint if the data point is found.");
     System.out.println("  exit - Exits the program.\n");
   }
 
@@ -108,9 +110,9 @@ public class App {
     // If the person is already in the file, then cannot alter their data
     if (!data.equals("") && contains(data.split(" ")[0], data.split(" ")[1]).equals("")) {
       fileWrite("data.txt", data);
-      System.out.println("Person added to file.\n");
+      System.out.println("  Datapoint added to file.\n");
     } else {
-      System.out.println("  Person already exists in the file. Use 'edit' to change their data.\n");
+      System.out.println("  Datapoint already exists in the file. Use 'edit' to change the data.\n");
     }
 
     return "";
@@ -207,7 +209,14 @@ public class App {
       + name.substring(1).toLowerCase();
   }
 
-  // TODO: Implement remove a datapoint
+  /**
+   * Method to remove a person from the file.
+   * Finds the line that the data is on, and then removes it from the file.
+   * If the data does not exit in the file, then does not do anything.
+   * 
+   * @param sc The scanner to read the user's input.
+   * @throws IOException If the file cannot be read.
+   */
   public void remove(Scanner sc) throws IOException {
     System.out.println("  Given Name: ");
     String givenName = sc.nextLine().trim();
@@ -226,9 +235,10 @@ public class App {
     // If the person is in the file, then remove them
     String line = contains(givenName, surname);
     if (!line.equals("")) {
-      System.out.println("  Person found!");
+      System.out.println("  Datapoint found!");
       // Logic to remove the person from the file
       File inputFile = new File("data.txt");
+      // Uses the temp file to temporarily store the data without the person to be removed
       File tempFile = new File("temp.txt");
 
       BufferedReader reader = new BufferedReader(new FileReader(inputFile));
@@ -245,12 +255,12 @@ public class App {
       reader.close();
       boolean successful = tempFile.renameTo(inputFile);
       if (successful) {
-        System.out.println("  Person removed from file.\n");
+        System.out.println("  Datapoint removed from file.\n");
       } else {
-        System.out.println("  Person not removed from file.\n");
+        System.out.println("  Datapoint not removed from file.\n");
       }
     } else {
-      System.out.println("  Person not found\n");
+      System.out.println("  Datapoint not found\n");
     }
   }
 
@@ -277,16 +287,71 @@ public class App {
     // If the person is in the file, then print their data
     String line = contains(givenName, surname);
     if (!line.equals("")) {
-      System.out.println("  Person found!");
+      System.out.println("  Datapoint found!");
       System.out.println("  " + line + "\n");
     } else {
-      System.out.println("  Person not found\n");
+      System.out.println("  Datapoint not found\n");
     }
     return "";
   }
 
-  // TODO: Implement edit a datapoint
-  public void edit() {
+  /**
+   * Method to edit a person in the file. Uses the person's given name and surname to find them.
+   * 
+   * @param sc The scanner to read the user's input.
+   * @throws IOException If the file cannot be read.
+   */
+  public void edit(Scanner sc) throws IOException {
+    System.out.println("  Given Name: ");
+    String givenName = sc.nextLine().trim();
+    if (givenName.toLowerCase().equals("exit")) {
+      return;
+    }
+    givenName = makeGoodGrammar(givenName);
+
+    System.out.println("  Surname: ");
+    String surname = sc.nextLine().trim();
+    if (surname.toLowerCase().equals("exit")) {
+      return;
+    }
+    surname = makeGoodGrammar(surname);
+
+    // If the person is in the file, then remove them
+    String line = contains(givenName, surname);
+    if (!line.equals("")) {
+      System.out.println("  Datapoint found!");
+      System.out.println("  Original data:" + line + "\n");
+      System.out.println("  Please enter new data:");
+      String data = askForData(sc).trim();
+      // Logic to remove the person from the file
+      File inputFile = new File("data.txt");
+      // Uses the temp file to temporarily store the data without the person to be removed
+      File tempFile = new File("temp.txt");
+
+      BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+      BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+
+      String currentLine;
+
+      while((currentLine = reader.readLine()) != null) {
+        String trimmedLine = currentLine.trim();
+        if(trimmedLine.equals(line)) {
+          writer.write(data + System.getProperty("line.separator"));
+        } else {
+          writer.write(currentLine + System.getProperty("line.separator"));
+        }
+      }
+      writer.close();
+      reader.close();
+      boolean successful = tempFile.renameTo(inputFile);
+      if (successful) {
+        System.out.println("  Datapoint edited.\n");
+      } else {
+        System.out.println("  Datapoint not edited.\n");
+      }
+    } else {
+      System.out.println("  Datapoint not found\n");
+    }
   }
 
   /**
