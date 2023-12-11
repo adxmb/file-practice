@@ -26,19 +26,24 @@ public class App {
           app.printHelp();
           break;
         case "add":
-          String a = app.add(sc);
-          if (a.equals("exit")) {
+          if (app.add(sc).equals("exit")) {
             return;
           }
           break;
         case "remove":
-          app.remove(sc);
+          if (app.remove(sc).equals("exit")) {
+            return;
+          }
           break;
         case "find":
-          app.find(sc);
+          if (app.find(sc).equals("exit")) {
+            return;
+          }
           break;
         case "edit":
-          app.edit(sc);
+          if (app.edit(sc).equals("exit")) {
+            return;
+          }
           break;
         default:
           System.out.println("\nInvalid command. Type 'help' for a list of commands.\n");
@@ -217,18 +222,18 @@ public class App {
    * @param sc The scanner to read the user's input.
    * @throws IOException If the file cannot be read.
    */
-  public void remove(Scanner sc) throws IOException {
+  public String remove(Scanner sc) throws IOException {
     System.out.println("  Given Name: ");
     String givenName = sc.nextLine().trim();
     if (givenName.toLowerCase().equals("exit")) {
-      return;
+      return "exit";
     }
     givenName = makeGoodGrammar(givenName);
 
     System.out.println("  Surname: ");
     String surname = sc.nextLine().trim();
     if (surname.toLowerCase().equals("exit")) {
-      return;
+      return "exit";
     }
     surname = makeGoodGrammar(surname);
 
@@ -262,6 +267,7 @@ public class App {
     } else {
       System.out.println("  Datapoint not found\n");
     }
+    return "";
   }
 
   /**
@@ -301,18 +307,18 @@ public class App {
    * @param sc The scanner to read the user's input.
    * @throws IOException If the file cannot be read.
    */
-  public void edit(Scanner sc) throws IOException {
+  public String edit(Scanner sc) throws IOException {
     System.out.println("  Given Name: ");
     String givenName = sc.nextLine().trim();
     if (givenName.toLowerCase().equals("exit")) {
-      return;
+      return "exit";
     }
     givenName = makeGoodGrammar(givenName);
 
     System.out.println("  Surname: ");
     String surname = sc.nextLine().trim();
     if (surname.toLowerCase().equals("exit")) {
-      return;
+      return "exit";
     }
     surname = makeGoodGrammar(surname);
 
@@ -323,6 +329,9 @@ public class App {
       System.out.println("  Original data:" + line + "\n");
       System.out.println("  Please enter new data:");
       String data = askForData(sc).trim();
+      if (data.toLowerCase().equals("exit")) {
+        return "exit";
+      }
       // Logic to remove the person from the file
       File inputFile = new File("data.txt");
       // Uses the temp file to temporarily store the data without the person to be removed
@@ -352,6 +361,7 @@ public class App {
     } else {
       System.out.println("  Datapoint not found\n");
     }
+    return "";
   }
 
   /**
