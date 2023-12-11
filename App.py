@@ -11,9 +11,12 @@ def printHelp():
 
 # add function adds new data into the file
 def add():
-  askForData()
+  data = askForData()
+  if data.lower() == "exit":
+    return "exit"
   return
 
+# askForData function asks for the data to be added
 def askForData():
   line = ""
   given_name = input("  Given name:\n").capitalize().strip()
@@ -30,16 +33,50 @@ def askForData():
     dob = input("  Date of birth (DD/MM/YYYY):\n").strip()
     if (dob.lower() == "exit"):
       return "exit"
-    if (isValidDate(dob)):
-      line += dob + " "
+    if (len(isValidDate(dob)) > 0):
+      line += isValidDate(dob)
       break
     else:
       print("  Invalid date of birth. (Please use numbers and '/' only)")
 
   return line
 
+# isValidDate function checks if the date is valid
 def isValidDate(dob):
-  return False
+  parts = dob.split("/")
+  if (len(parts) == 3):
+    day = parts[0]
+    month = parts[1]
+    year = parts[2]
+    if (day.isdigit() and month.isdigit() and year.isdigit()):
+      if (int(day) > 0 and int(day) < 32 and int(month) > 0 and int(month) < 13 and int(year) > 0):
+        date = ""
+        if (int(day) < 10):
+          date += "0" + day + "/"
+        if (int(month) < 10):
+          if (not checkMonthDay(int(month), int(day))):
+            return ""
+          date += "0" + month + "/"
+        if (int(year) < 10):
+          date += "0" + year
+        elif (int(year) < 100):
+          date += "00" + year
+        elif (int(year) < 1000):
+          date += "0" + year
+        else:
+          date += year
+        return date
+  return ""
+
+# checkMonthDay function checks if the day is valid for the month
+def checkMonthDay(month, day):
+  if (month == 2):
+    if (day > 29):
+      return False
+  elif (month == 4 or month == 6 or month == 9 or month == 11):
+    if (day > 30):
+      return False
+  return True
 
 # remove function removes specific data into the file
 def remove():
@@ -62,7 +99,8 @@ def main():
       case "help":
         printHelp()
       case "add":
-        add()
+        if add() == "exit":
+          return
       case "remove":
         remove()
       case "find":
