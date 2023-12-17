@@ -14,7 +14,8 @@ def add():
   data = askForData()
   if data.lower() == "exit":
     return "exit"
-  return
+  else:
+    return data
 
 # askForData function asks for the data to be added
 def askForData():
@@ -30,11 +31,12 @@ def askForData():
   line += surname + " "
 
   while (True):
-    dob = input("  Date of birth (DD/MM/YYYY):\n").strip()
+    dob = input("  Date of birth (DD/MM/YYYY):\n")
     if (dob.lower() == "exit"):
       return "exit"
-    if (len(isValidDate(dob)) > 0):
-      line += isValidDate(dob)
+    date = isValidDate(dob)
+    if (len(date) > 0):
+      line += date
       break
     else:
       print("  Invalid date of birth. (Please use numbers and '/' only)")
@@ -52,13 +54,18 @@ def isValidDate(dob):
       if (int(day) > 0 and int(day) < 32 and int(month) > 0 and int(month) < 13 and int(year) > 0):
         date = ""
         if (int(day) < 10):
-          date += "0" + day + "/"
-        if (int(month) < 10):
-          if (not checkMonthDay(int(month), int(day))):
-            return ""
-          date += "0" + month + "/"
+          date += "0" + str(int(day)) + "/"
+        else:
+          date += day + "/"
+        if (checkMonthDay(int(month), int(day))):
+          if (int(month) < 10):
+            date += "0" + str(int(month)) + "/"
+          else:
+            date += month + "/"
+        else:
+          return ""
         if (int(year) < 10):
-          date += "0" + year
+          date += "000" + year
         elif (int(year) < 100):
           date += "00" + year
         elif (int(year) < 1000):
@@ -78,14 +85,17 @@ def checkMonthDay(month, day):
       return False
   return True
 
+# TODO
 # remove function removes specific data into the file
 def remove():
   return
 
+# TODO
 # find function prints the information of a datapoint if the data point is found
 def find():
   return
 
+#TODO
 # edit function edits a datapoint if the data point is found
 def edit():
   return
@@ -99,14 +109,24 @@ def main():
       case "help":
         printHelp()
       case "add":
-        if add() == "exit":
+        line = add()
+        if line == "exit":
           return
+        try:
+          with open("data.txt", "x") as f:
+            f.write(line + "\n")
+          print("  Datapoint added to file.\n")
+        except:
+          print("  Error adding datapoint to file.\n")
       case "remove":
-        remove()
+        if remove() == "exit":
+          return
       case "find":
-        find()
+        if find() == "exit":
+          return
       case "edit":
-        edit()
+        if edit() == "exit":
+          return
       case _:
         print("Invalid command. Type 'help' to see the list of commands.")
     command = input().lower().strip()
