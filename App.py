@@ -113,8 +113,8 @@ def main():
         if line == "exit":
           return
         try:
-          with open("data.txt", "x") as f:
-            f.write(line + "\n")
+          with open("data.txt", "a") as f:
+            f.write("\n" + line)
           print("  Datapoint added to file.\n")
         except:
           print("  Error adding datapoint to file.\n")
