@@ -50,6 +50,7 @@ def isValidDate(dob):
     day = parts[0]
     month = parts[1]
     year = parts[2]
+    # Adding appriopriate zeros to the date
     if (day.isdigit() and month.isdigit() and year.isdigit()):
       if (int(day) > 0 and int(day) < 32 and int(month) > 0 and int(month) < 13 and int(year) > 0):
         date = ""
@@ -102,8 +103,10 @@ def edit():
 
 # main function
 def main():
+  # starting off by showing instructions
   printHelp()
   command = input().lower().strip()
+  # executing commands until user indicates they want to exit the program
   while command != "exit":
     match command:
       case "help":
